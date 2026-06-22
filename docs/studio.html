@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio — CharacterOS</title>
+  <meta name="description" content="CharacterOS studio — manage Mimi's world, generate content, and run production briefs." />
+  <meta name="theme-color" content="#08080c" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08080c;
+      --surface: #12121a;
+      --surface-raised: #14141f;
+      --accent: #a78bfa;
+      --accent-glow: #c4b5fd;
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --border: rgba(255,255,255,0.06);
+    }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(to right, rgba(167,139,250,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(167,139,250,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .glow-1 {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 20% 0%, rgba(167,139,250,0.08), transparent 50%);
+    }
+    .glow-2 {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.04), transparent 40%);
+    }
+    .wrap { position: relative; z-index: 1; max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 0;
+    }
+    .logo { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; color: inherit; }
+    .logo-icon {
+      width: 2.25rem; height: 2.25rem; border-radius: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .logo-title { font-size: 0.875rem; font-weight: 600; }
+    .logo-sub { font-size: 0.625rem; color: #52525b; }
+    .nav-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .nav-link {
+      font-size: 0.875rem; font-weight: 500; text-decoration: none;
+      color: #71717a; padding: 0.5rem 0.625rem; border-radius: 0.5rem;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: #e4e4e7; }
+    .nav-link.active { color: #f4f4f5; background: rgba(255,255,255,0.06); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; border-radius: 0.5rem;
+      font-size: 0.875rem; font-weight: 500; text-decoration: none;
+      transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: white; border: none; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary.active { box-shadow: 0 0 0 2px rgba(167,139,250,0.4); }
+    .hide-sm { display: none; }
+    @media (min-width: 640px) { .hide-sm { display: inline-flex; } }
+    .studio-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 0 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+      margin-bottom: 2rem;
+    }
+    .studio-bar p { font-size: 0.875rem; color: var(--muted); }
+    .studio-bar strong { color: #d4d4d8; font-weight: 500; }
+    .flow {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.75rem;
+      padding: 0.875rem 1rem; border-radius: 1rem;
+      border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02);
+      margin-bottom: 2rem;
+    }
+    .flow-step { display: flex; align-items: center; gap: 0.625rem; }
+    .flow-icon {
+      width: 2rem; height: 2rem; border-radius: 0.5rem;
+      background: rgba(167,139,250,0.1);
+      display: flex; align-items: center; justify-content: center; font-size: 0.875rem;
+    }
+    .flow-step p { font-size: 0.75rem; font-weight: 600; color: #e4e4e7; }
+    .flow-step span { font-size: 0.625rem; color: #52525b; display: none; }
+    @media (min-width: 640px) { .flow-step span { display: block; } }
+    .flow-arrow { color: #3f3f46; font-size: 0.75rem; }
+    .hero-card {
+      position: relative; overflow: hidden; border-radius: 1.5rem;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--surface), var(--surface-raised), var(--surface));
+      margin-bottom: 2rem;
+    }
+    .hero-grid { display: grid; min-height: 22rem; }
+    @media (min-width: 900px) { .hero-grid { grid-template-columns: 1.1fr 1fr; min-height: 28rem; } }
+    .hero-portrait {
+      position: relative; min-height: 16rem;
+      background: linear-gradient(135deg, rgba(244,114,182,0.35), rgba(251,191,36,0.2), rgba(139,92,246,0.35));
+    }
+    .hero-portrait img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+    }
+    .hero-portrait::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, #0a0a0f, transparent 60%);
+    }
+    @media (min-width: 900px) {
+      .hero-portrait::after {
+        background: linear-gradient(to right, transparent, rgba(10,10,15,0.85));
+      }
+    }
+    .hero-body { padding: 1.75rem; display: flex; flex-direction: column; justify-content: center; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .tag {
+      font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 0.125rem 0.625rem; border-radius: 9999px;
+      border: 1px solid rgba(52,211,153,0.3); background: rgba(52,211,153,0.1); color: #34d399;
+    }
+    .hero-body h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .hero-meta { font-size: 0.875rem; color: var(--muted); margin-bottom: 1rem; }
+    .traits { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+    .trait {
+      font-size: 0.6875rem; padding: 0.25rem 0.625rem; border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #a1a1aa;
+    }
+    .stats {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 2rem;
+    }
+    @media (min-width: 640px) { .stats { grid-template-columns: repeat(5, 1fr); } }
+    .stat {
+      padding: 1rem; border-radius: 1rem; border: 1px solid var(--border);
+      background: rgba(18,18,26,0.6);
+    }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: white; }
+    .stat-label { font-size: 0.6875rem; color: var(--muted); margin-top: 0.25rem; }
+    .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #52525b; margin-bottom: 1rem; }
+    .actions {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 2rem;
+    }
+    @media (min-width: 768px) { .actions { grid-template-columns: repeat(3, 1fr); } }
+    .action {
+      padding: 1rem; border-radius: 1rem; border: 1px solid var(--border);
+      background: rgba(18,18,26,0.6); text-align: left;
+    }
+    .action.featured { border-color: rgba(167,139,250,0.25); background: rgba(167,139,250,0.06); }
+    .action-emoji { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    .action h3 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .action p { font-size: 0.75rem; color: var(--muted); }
+    .content-grid {
+      display: grid; gap: 0.75rem; margin-bottom: 2rem;
+    }
+    @media (min-width: 640px) { .content-grid { grid-template-columns: repeat(3, 1fr); } }
+    .content-card {
+      position: relative; aspect-ratio: 4/5; border-radius: 1rem; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .content-card img { width: 100%; height: 100%; object-fit: cover; }
+    .content-card::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85), transparent 55%);
+    }
+    .content-card div {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 1rem; z-index: 1;
+    }
+    .content-card h3 { font-size: 0.8125rem; font-weight: 600; }
+    .content-card p { font-size: 0.6875rem; color: #a1a1aa; margin-top: 0.25rem; }
+    .brief {
+      padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border);
+      background: rgba(18,18,26,0.6); margin-bottom: 2rem;
+    }
+    .brief h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+    .brief-grid { display: grid; gap: 0.75rem; }
+    @media (min-width: 640px) { .brief-grid { grid-template-columns: repeat(2, 1fr); } }
+    .brief-item { font-size: 0.8125rem; }
+    .brief-item dt { color: var(--muted); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .brief-item dd { color: #e4e4e7; }
+    .notice {
+      padding: 1rem 1.25rem; border-radius: 0.75rem;
+      border: 1px dashed rgba(167,139,250,0.25); background: rgba(167,139,250,0.06);
+      font-size: 0.8125rem; color: #a1a1aa; margin-bottom: 2rem;
+    }
+    .notice a { color: var(--accent-glow); text-decoration: none; }
+    .notice a:hover { color: white; }
+    footer {
+      margin-top: 2rem; padding: 2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      text-align: center; font-size: 0.75rem; color: #52525b;
+    }
+    .top-bar {
+      position: relative; z-index: 20;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: rgba(10,10,16,0.95); backdrop-filter: blur(8px);
+    }
+    .top-bar-inner {
+      max-width: 72rem; margin: 0 auto; padding: 0.625rem 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      gap: 2rem; flex-wrap: wrap;
+    }
+    .top-link {
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; text-decoration: none; color: #71717a;
+      transition: color 0.15s;
+    }
+    .top-link:hover { color: #e4e4e7; }
+    .top-link.active { color: var(--accent-glow); }
+    .top-sep { color: #3f3f46; font-size: 0.5rem; }
+  </style>
+</head>
+<body>
+  <nav class="top-bar" aria-label="Site">
+    <div class="top-bar-inner">
+      <a class="top-link" href="index.html">Home</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha.myportfolio.com/work" target="_blank" rel="noopener">Work</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha.myportfolio.com/application" target="_blank" rel="noopener">Application</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha09.github.io/About-Me/" target="_blank" rel="noopener">About me</a>
+    </div>
+  </nav>
+
+  <div class="grid-bg"></div>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="wrap">
+    <header>
+      <a class="logo" href="index.html">
+        <div class="logo-icon">✦</div>
+        <div>
+          <div class="logo-title">CharacterOS</div>
+          <div class="logo-sub">AI Character Studio</div>
+        </div>
+      </a>
+      <div class="nav-actions">
+        <a class="btn btn-ghost hide-sm" href="https://github.com/gajendrajha09/Character-OS" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn btn-primary active" href="studio.html">Run Studio →</a>
+      </div>
+    </header>
+
+    <div class="studio-bar">
+      <p><strong>Studio</strong> · Mimi&apos;s universe</p>
+      <p>Static preview · full app runs locally with <code>npm run dev</code></p>
+    </div>
+
+    <main>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-icon">✦</div>
+          <div><p>Create Character</p><span>Identity &amp; personality</span></div>
+        </div>
+        <span class="flow-arrow hide-sm">→</span>
+        <div class="flow-step">
+          <div class="flow-icon">📍</div>
+          <div><p>Build World</p><span>Home, places, friends</span></div>
+        </div>
+        <span class="flow-arrow hide-sm">→</span>
+        <div class="flow-step">
+          <div class="flow-icon">🪄</div>
+          <div><p>Generate Content</p><span>Posts, reels, campaigns</span></div>
+        </div>
+      </div>
+
+      <article class="hero-card">
+        <div class="hero-grid">
+          <div class="hero-portrait">
+            <img src="images/mimi/portrait.jpg" alt="Mimi portrait" onerror="this.style.display='none'" />
+          </div>
+          <div class="hero-body">
+            <div class="hero-tags">
+              <span class="tag">Active character</span>
+              <span class="tag" style="border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.1);color:#c4b5fd">Monsoon in Mumbai</span>
+            </div>
+            <h1>Mimi</h1>
+            <p class="hero-meta">23 · Marketing Executive · Powai, Mumbai · Lifestyle Creator</p>
+            <p class="hero-meta" style="margin-bottom:1rem">Cozy Luxury mood · Mimi&apos;s Mumbai World</p>
+            <div class="traits">
+              <span class="trait">Playful</span>
+              <span class="trait">Luxury</span>
+              <span class="trait">Feminine</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <p class="section-title">Creator stats</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-value">24</div><div class="stat-label">Posts Generated</div></div>
+        <div class="stat"><div class="stat-value">12</div><div class="stat-label">Reels Generated</div></div>
+        <div class="stat"><div class="stat-value">2</div><div class="stat-label">Campaigns Active</div></div>
+        <div class="stat"><div class="stat-value">42</div><div class="stat-label">Assets This Month</div></div>
+        <div class="stat"><div class="stat-value">8</div><div class="stat-label">Ready to Publish</div></div>
+      </div>
+
+      <p class="section-title">Primary actions</p>
+      <div class="actions">
+        <div class="action"><div class="action-emoji">📸</div><h3>Generate Post</h3><p>Instagram-ready stills</p></div>
+        <div class="action featured"><div class="action-emoji">🎬</div><h3>Generate Reel</h3><p>15s lifestyle clips</p></div>
+        <div class="action"><div class="action-emoji">✨</div><h3>Product Promotion</h3><p>Brand-aware promos</p></div>
+        <div class="action"><div class="action-emoji">📅</div><h3>Content Calendar</h3><p>Plan the week ahead</p></div>
+        <div class="action"><div class="action-emoji">📱</div><h3>Story Sequence</h3><p>Multi-frame stories</p></div>
+        <div class="action"><div class="action-emoji">🚀</div><h3>Generate Campaign</h3><p>Full campaign arcs</p></div>
+      </div>
+
+      <p class="section-title">Recent content</p>
+      <div class="content-grid">
+        <div class="content-card">
+          <img src="images/mimi/content-1.jpg" alt="" />
+          <div><h3>Sunday at Blue Tokai</h3><p>2h ago · image</p></div>
+        </div>
+        <div class="content-card">
+          <img src="images/mimi/content-2.jpg" alt="" />
+          <div><h3>Monday Morning Routine</h3><p>5h ago · reel</p></div>
+        </div>
+        <div class="content-card">
+          <img src="images/mimi/content-3.jpg" alt="" />
+          <div><h3>Nike Street Style</h3><p>1d ago · promo</p></div>
+        </div>
+      </div>
+
+      <p class="section-title">Production brief</p>
+      <div class="brief">
+        <h2>Monday Morning at Home</h2>
+        <dl class="brief-grid">
+          <div class="brief-item"><dt>Content type</dt><dd>Instagram Reel</dd></div>
+          <div class="brief-item"><dt>Goal</dt><dd>Morning lifestyle — cozy luxury aesthetic</dd></div>
+          <div class="brief-item"><dt>Location</dt><dd>Powai Apartment</dd></div>
+          <div class="brief-item"><dt>Wardrobe</dt><dd>Oversized Beige Sweater</dd></div>
+          <div class="brief-item"><dt>Mood</dt><dd>Cozy Luxury</dd></div>
+          <div class="brief-item"><dt>Camera</dt><dd>Handheld Lifestyle Vlog</dd></div>
+        </dl>
+      </div>
+
+      <p class="notice">
+        This is a static GitHub Pages preview. For the interactive studio with generation and API routes, run
+        <a href="https://github.com/gajendrajha09/Character-OS#getting-started" target="_blank" rel="noopener">npm run dev</a>
+        locally or deploy the Next.js app to Vercel.
+      </p>
+    </main>
+
+    <footer>CharacterOS — AI Character Studio &amp; Content Engine</footer>
+  </div>
+</body>
+</html>

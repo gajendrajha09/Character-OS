@@ -62,7 +62,14 @@
     }
     .logo-title { font-size: 0.875rem; font-weight: 600; }
     .logo-sub { font-size: 0.625rem; color: #52525b; }
-    .nav-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .nav-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .nav-link {
+      font-size: 0.875rem; font-weight: 500; text-decoration: none;
+      color: #71717a; padding: 0.5rem 0.625rem; border-radius: 0.5rem;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: #e4e4e7; }
+    .nav-link.active { color: #f4f4f5; background: rgba(255,255,255,0.06); }
     .btn {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.5rem 1rem; border-radius: 0.5rem;
@@ -93,6 +100,9 @@
       .btn-ghost.hide-sm { display: inline-flex; }
     }
     .hide-sm { display: none; }
+    @media (min-width: 640px) {
+      .nav-link.hide-sm { display: inline-flex; }
+    }
     .badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.25rem 0.75rem; border-radius: 9999px;
@@ -185,9 +195,39 @@
       border-top: 1px solid rgba(255,255,255,0.04);
       text-align: center; font-size: 0.75rem; color: #52525b;
     }
+    .top-bar {
+      position: relative; z-index: 20;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: rgba(10,10,16,0.95); backdrop-filter: blur(8px);
+    }
+    .top-bar-inner {
+      max-width: 72rem; margin: 0 auto; padding: 0.625rem 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      gap: 2rem; flex-wrap: wrap;
+    }
+    .top-link {
+      font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; text-decoration: none; color: #71717a;
+      transition: color 0.15s;
+    }
+    .top-link:hover { color: #e4e4e7; }
+    .top-link.active { color: var(--accent-glow); }
+    .top-sep { color: #3f3f46; font-size: 0.5rem; }
   </style>
 </head>
 <body>
+  <nav class="top-bar" aria-label="Site">
+    <div class="top-bar-inner">
+      <a class="top-link active" href="index.html">Home</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha.myportfolio.com/work" target="_blank" rel="noopener">Work</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha.myportfolio.com/application" target="_blank" rel="noopener">Application</a>
+      <span class="top-sep">◆</span>
+      <a class="top-link" href="https://gajendrajha09.github.io/About-Me/" target="_blank" rel="noopener">About me</a>
+    </div>
+  </nav>
+
   <div class="grid-bg"></div>
   <div class="glow-1"></div>
   <div class="glow-2"></div>
@@ -202,9 +242,8 @@
         </div>
       </a>
       <div class="nav-actions">
-        <a class="btn btn-ghost hide-sm" href="https://gajendrajha09.github.io/About-Me/" target="_blank" rel="noopener">Portfolio</a>
         <a class="btn btn-ghost hide-sm" href="https://github.com/gajendrajha09/Character-OS" target="_blank" rel="noopener">GitHub</a>
-        <a class="btn btn-primary" href="https://github.com/gajendrajha09/Character-OS#getting-started" target="_blank" rel="noopener">Run Studio →</a>
+        <a class="btn btn-primary" href="studio.html">Run Studio →</a>
       </div>
     </header>
 
@@ -218,7 +257,7 @@
             who their friends are, and what they wear — then generates consistent content from that world.
           </p>
           <div class="cta-row">
-            <a class="btn btn-lg btn-gradient" href="https://github.com/gajendrajha09/Character-OS#getting-started" target="_blank" rel="noopener">Launch Studio →</a>
+            <a class="btn btn-lg btn-gradient" href="studio.html">Launch Studio →</a>
             <a class="btn btn-lg btn-ghost" href="https://github.com/gajendrajha09/Character-OS#readme" target="_blank" rel="noopener">Read the docs</a>
           </div>
         </div>
@@ -263,7 +302,7 @@
 
       <section class="bottom-cta">
         <p>Eight modules · Production Brief Engine · Higgsfield MCP integration</p>
-        <a href="https://github.com/gajendrajha09/Character-OS" target="_blank" rel="noopener">Explore the full studio on GitHub →</a>
+        <a href="studio.html">Explore the full studio →</a>
       </section>
     </main>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Github, MapPin, Sparkles, Wand2 } from "lucide-react";
+import { TopBar } from "@/components/layout/top-bar";
 import { MIMI_IMAGES } from "@/lib/mock/mimi-images";
 
 const features = [
@@ -28,12 +29,14 @@ export function LandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#08080c] text-zinc-100">
+      <TopBar active="home" />
+
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern bg-[size:48px_48px]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(167,139,250,0.12),transparent_50%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_100%,rgba(245,158,11,0.06),transparent_40%)]" />
 
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-6 lg:px-8">
-        <div className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-violet-600">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
@@ -41,16 +44,8 @@ export function LandingPage() {
             <p className="text-sm font-semibold tracking-tight text-white">CharacterOS</p>
             <p className="text-[10px] text-zinc-600">AI Character Studio</p>
           </div>
-        </div>
+        </Link>
         <div className="flex items-center gap-3">
-          <a
-            href="https://gajendrajha09.github.io/About-Me/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block"
-          >
-            Portfolio
-          </a>
           <a
             href="https://github.com/gajendrajha09/Character-OS"
             target="_blank"
@@ -64,7 +59,7 @@ export function LandingPage() {
             href="/studio"
             className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-muted"
           >
-            Open Studio
+            Run Studio
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
