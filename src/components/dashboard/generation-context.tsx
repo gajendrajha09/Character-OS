@@ -190,6 +190,10 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
 
       traits: d.traits,
 
+      portraitUrl: d.avatarUrl ?? d.portraitUrl,
+
+      avatarUrl: d.avatarUrl,
+
     } as CharacterSummary;
 
   }, []);

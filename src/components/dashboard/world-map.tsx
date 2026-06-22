@@ -39,7 +39,7 @@ function NodeThumbnail({
   if (!imageUrl) return null;
 
   return (
-  /* eslint-disable-next-line @next/next/no-img-element */
+    /* eslint-disable-next-line @next/next/no-img-element */
     <img
       src={imageUrl}
       alt={label}

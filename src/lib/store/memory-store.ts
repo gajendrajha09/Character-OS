@@ -19,6 +19,7 @@ import type {
 } from "@prisma/client";
 import type { StoredAsset, GenerationHistoryEntry } from "../../types/generation.js";
 import type { WorldGraph } from "../../types/world.js";
+import { MIMI_IMAGES } from "../mock/mimi-images.js";
 
 export type JobStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
@@ -327,6 +328,41 @@ function makeCampaign(characterId: string, title: string, goal: string): Campaig
   };
 }
 
+function seedMimiAssets(campaignId: string): void {
+  if (assets.some((a) => a.characterId === DEMO_CHARACTER_ID)) return;
+
+  const nowIso = now();
+  const demoAssets: Array<{
+    name: string;
+    type: "IMAGE" | "VIDEO";
+    url: string;
+    hoursAgo: number;
+  }> = [
+    { name: "Sunday at Blue Tokai", type: "IMAGE", url: MIMI_IMAGES.content[0], hoursAgo: 2 },
+    { name: "Monday Morning Routine", type: "VIDEO", url: MIMI_IMAGES.content[1], hoursAgo: 5 },
+    { name: "Nike Street Style", type: "IMAGE", url: MIMI_IMAGES.content[2], hoursAgo: 24 },
+    { name: "Monsoon balcony vibes", type: "IMAGE", url: MIMI_IMAGES.content[3], hoursAgo: 26 },
+    { name: "Monsoon in Mumbai", type: "IMAGE", url: MIMI_IMAGES.content[4], hoursAgo: 72 },
+  ];
+
+  for (const item of demoAssets) {
+    const createdAt = new Date(Date.now() - item.hoursAgo * 60 * 60 * 1000).toISOString();
+    assets.push({
+      id: uuid(),
+      characterId: DEMO_CHARACTER_ID,
+      type: item.type,
+      name: item.name,
+      url: item.url,
+      thumbnailUrl: item.url,
+      campaignId,
+      characterName: "Mimi",
+      campaignTitle: "Monsoon in Mumbai",
+      metadata: { mock: true, demo: true },
+      createdAt,
+    });
+  }
+}
+
 function seedMimi(): void {
   if (characters.has(DEMO_CHARACTER_ID)) return;
 
@@ -336,9 +372,13 @@ function seedMimi(): void {
     age: 23,
     contentNiche: "Lifestyle Creator",
     brandVoice: "Warm, aspirational",
+    avatarUrl: MIMI_IMAGES.portrait,
   });
   const bible = makeBible(DEMO_CHARACTER_ID, "Mimi");
   const world = makeWorldGraph(DEMO_CHARACTER_ID, "Mimi", "Mumbai");
+  world.residence.imageUrl = MIMI_IMAGES.apartment;
+  if (world.locations[0]) world.locations[0].imageUrl = MIMI_IMAGES.cafe;
+  if (world.locations[1]) world.locations[1].imageUrl = MIMI_IMAGES.gym;
   const outfits = makeOutfits(DEMO_CHARACTER_ID);
   const routines = makeRoutines(DEMO_CHARACTER_ID, world.locations[0]?.id);
   const campaign = makeCampaign(DEMO_CHARACTER_ID, "Monsoon in Mumbai", "Authentic lifestyle content");
@@ -364,6 +404,8 @@ function seedMimi(): void {
     world,
     campaigns: [campaign],
   });
+
+  seedMimiAssets(campaign.id);
 }
 
 seedMimi();
