@@ -376,7 +376,7 @@ function seedMimi(): void {
   });
   const bible = makeBible(DEMO_CHARACTER_ID, "Mimi");
   const world = makeWorldGraph(DEMO_CHARACTER_ID, "Mimi", "Mumbai");
-  world.residence.imageUrl = MIMI_IMAGES.apartment;
+  if (world.residence) world.residence.imageUrl = MIMI_IMAGES.apartment;
   if (world.locations[0]) world.locations[0].imageUrl = MIMI_IMAGES.cafe;
   if (world.locations[1]) world.locations[1].imageUrl = MIMI_IMAGES.gym;
   const outfits = makeOutfits(DEMO_CHARACTER_ID);

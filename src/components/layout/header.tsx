@@ -13,7 +13,7 @@ export function Header({ onNewCharacter }: HeaderProps) {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.04] bg-surface/60 px-5 backdrop-blur-xl lg:px-8">
       <p className="text-sm text-zinc-500">
-        <Link href="/" className="font-medium text-zinc-300 transition hover:text-white">
+        <Link href="/studio" className="font-medium text-zinc-300 transition hover:text-white">
           Studio
         </Link>
         <span className="mx-2 text-zinc-700">·</span>
