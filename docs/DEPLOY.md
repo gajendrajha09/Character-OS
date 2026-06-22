@@ -6,12 +6,17 @@ The repo includes a static landing page at [`docs/index.html`](./index.html) —
 
 1. Open **GitHub → Character-OS → Settings → Pages**
 2. Under **Build and deployment**, set **Source** to **Deploy from a branch**
-3. Choose branch **main** and folder **/docs**
+3. Choose branch **main** and folder **/(root)** or **/docs** (both work — see below)
 4. Save — GitHub publishes within ~1 minute
 
 **Live URL:** [https://gajendrajha09.github.io/Character-OS/](https://gajendrajha09.github.io/Character-OS/)
 
-The static page links to the repo for running the full studio locally. Add Mimi demo images under `docs/images/mimi/` (copy from `public/images/mimi/` when available) to show the portrait on Pages.
+| Pages folder | Entry point | Mimi portrait path |
+|--------------|-------------|-------------------|
+| **/(root)** (current) | [`index.html`](../index.html) at repo root | `docs/images/mimi/portrait.jpg` |
+| **/docs** | [`docs/index.html`](./index.html) | `images/mimi/portrait.jpg` |
+
+The static page links to the repo for running the full studio locally. Mimi demo images live under `docs/images/mimi/` (also mirrored in `public/images/mimi/` for the Next.js app).
 
 ## Full Next.js app (local or Vercel)
 

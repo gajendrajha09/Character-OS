@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowRight, Github, MapPin, Sparkles, Wand2 } from "lucide-react";
 import { MIMI_IMAGES } from "@/lib/mock/mimi-images";
 
@@ -21,6 +24,8 @@ const features = [
 ];
 
 export function LandingPage() {
+  const [portraitError, setPortraitError] = useState(false);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#08080c] text-zinc-100">
       <div className="pointer-events-none absolute inset-0 bg-grid-pattern bg-[size:48px_48px]" />
@@ -38,6 +43,14 @@ export function LandingPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <a
+            href="https://gajendrajha09.github.io/About-Me/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block"
+          >
+            Portfolio
+          </a>
           <a
             href="https://github.com/gajendrajha09/Character-OS"
             target="_blank"
@@ -96,13 +109,20 @@ export function LandingPage() {
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(167,139,250,0.15),transparent_50%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(245,158,11,0.08),transparent_40%)]" />
 
-              <div className="relative aspect-[3/4] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={MIMI_IMAGES.portrait}
-                  alt="Mimi — lifestyle creator in Powai, Mumbai"
-                  className="h-full w-full object-cover object-top"
-                />
+              <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-pink-500/35 via-amber-400/20 to-violet-500/35">
+                {!portraitError ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={MIMI_IMAGES.portrait}
+                    alt="Mimi — lifestyle creator in Powai, Mumbai"
+                    className="h-full w-full object-cover object-top"
+                    onError={() => setPortraitError(true)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-6xl font-bold text-white/15">
+                    M
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent" />
               </div>
 
