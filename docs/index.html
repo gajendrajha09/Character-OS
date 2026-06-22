@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CharacterOS — AI Character Studio</title>
+  <meta name="description" content="Create, manage, and grow AI characters with consistent identity, world, and content generation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #08080c;
+      --surface: #12121a;
+      --accent: #a78bfa;
+      --accent-glow: #c4b5fd;
+      --warm: #f59e0b;
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --border: rgba(255,255,255,0.06);
+    }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(to right, rgba(167,139,250,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(167,139,250,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .glow-1 {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 20% 0%, rgba(167,139,250,0.12), transparent 50%);
+    }
+    .glow-2 {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse at 80% 100%, rgba(245,158,11,0.06), transparent 40%);
+    }
+    .wrap { position: relative; z-index: 1; max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem 0;
+    }
+    .logo { display: flex; align-items: center; gap: 0.625rem; text-decoration: none; color: inherit; }
+    .logo-icon {
+      width: 2.25rem; height: 2.25rem; border-radius: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .logo-title { font-size: 0.875rem; font-weight: 600; }
+    .logo-sub { font-size: 0.625rem; color: #52525b; }
+    .nav-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; border-radius: 0.5rem;
+      font-size: 0.875rem; font-weight: 500; text-decoration: none;
+      transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .btn-ghost {
+      border: 1px solid rgba(255,255,255,0.08); color: #a1a1aa;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.15); color: #e4e4e7; }
+    .btn-primary {
+      background: var(--accent); color: white; border: none;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-lg {
+      padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600;
+    }
+    .btn-gradient {
+      background: linear-gradient(to right, var(--accent), #7c3aed);
+      color: white; box-shadow: 0 10px 30px rgba(167,139,250,0.2);
+    }
+    .hero {
+      display: grid; gap: 3rem; align-items: center;
+      padding: 2rem 0 5rem;
+    }
+    @media (min-width: 1024px) {
+      .hero { grid-template-columns: 1fr 1fr; gap: 4rem; padding-top: 4rem; }
+      .btn-ghost.hide-sm { display: inline-flex; }
+    }
+    .hide-sm { display: none; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.25rem 0.75rem; border-radius: 9999px;
+      border: 1px solid rgba(167,139,250,0.2);
+      background: rgba(167,139,250,0.1);
+      color: var(--accent-glow); font-size: 0.75rem; font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-glow); }
+    h1 {
+      font-size: clamp(2.25rem, 5vw, 3.75rem);
+      font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+      background: linear-gradient(to right, var(--accent-glow), white, var(--accent));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin-bottom: 1.5rem;
+    }
+    .lead {
+      font-size: 1.0625rem; color: var(--muted); max-width: 32rem;
+      margin-bottom: 1.5rem; line-height: 1.65;
+    }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .card {
+      position: relative; border-radius: 2rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, var(--surface), #14141f, var(--surface));
+      overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+    .card-glow {
+      position: absolute; inset: -1rem; z-index: -1; border-radius: 2.5rem;
+      background: linear-gradient(to bottom, rgba(167,139,250,0.2), transparent);
+      filter: blur(48px);
+    }
+    .portrait {
+      aspect-ratio: 3/4; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, rgba(244,114,182,0.35), rgba(251,191,36,0.2), rgba(139,92,246,0.35));
+    }
+    .portrait img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top;
+    }
+    .portrait-fallback {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; font-weight: 700; color: rgba(255,255,255,0.15);
+    }
+    .portrait-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #0a0a0f, transparent);
+    }
+    .card-body { padding: 1.5rem; }
+    .card-tags { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.625rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.05em; padding: 0.125rem 0.625rem; border-radius: 9999px;
+      border: 1px solid rgba(52,211,153,0.3); background: rgba(52,211,153,0.1); color: #34d399;
+    }
+    .location { font-size: 0.75rem; color: var(--muted); }
+    .card h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+    .features {
+      display: grid; gap: 1rem; margin-top: 6rem;
+    }
+    @media (min-width: 640px) { .features { grid-template-columns: repeat(3, 1fr); } }
+    .feature {
+      padding: 1.5rem; border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: rgba(18,18,26,0.6);
+    }
+    .feature-icon {
+      width: 2.5rem; height: 2.5rem; border-radius: 0.75rem;
+      background: rgba(167,139,250,0.1);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem; font-size: 1.125rem;
+    }
+    .feature h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .feature p { font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+    .bottom-cta {
+      margin-top: 4rem; padding: 2rem;
+      border-radius: 1rem; border: 1px solid var(--border);
+      background: rgba(18,18,26,0.4); text-align: center;
+    }
+    .bottom-cta p { font-size: 0.875rem; color: var(--muted); }
+    .bottom-cta a {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      margin-top: 1rem; font-size: 0.875rem; font-weight: 500;
+      color: var(--accent-glow); text-decoration: none;
+    }
+    .bottom-cta a:hover { color: white; }
+    footer {
+      margin-top: 2rem; padding: 2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      text-align: center; font-size: 0.75rem; color: #52525b;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="wrap">
+    <header>
+      <a class="logo" href="./">
+        <div class="logo-icon">✦</div>
+        <div>
+          <div class="logo-title">CharacterOS</div>
+          <div class="logo-sub">AI Character Studio</div>
+        </div>
+      </a>
+      <div class="nav-actions">
+        <a class="btn btn-ghost hide-sm" href="https://github.com/gajendrajha09/Character-OS" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn btn-primary" href="https://github.com/gajendrajha09/Character-OS#getting-started" target="_blank" rel="noopener">Run Studio →</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="badge"><span class="badge-dot"></span> Live demo — meet Mimi</p>
+          <h1>Character → World → Content</h1>
+          <p class="lead">
+            The permanent memory system for AI characters. CharacterOS remembers where they live,
+            who their friends are, and what they wear — then generates consistent content from that world.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-lg btn-gradient" href="https://github.com/gajendrajha09/Character-OS#getting-started" target="_blank" rel="noopener">Launch Studio →</a>
+            <a class="btn btn-lg btn-ghost" href="https://github.com/gajendrajha09/Character-OS#readme" target="_blank" rel="noopener">Read the docs</a>
+          </div>
+        </div>
+
+        <div style="position:relative;max-width:22rem;margin:0 auto;width:100%">
+          <div class="card-glow"></div>
+          <article class="card">
+            <div class="portrait">
+              <img src="images/mimi/portrait.jpg" alt="Mimi portrait" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <div class="portrait-fallback" style="display:none">M</div>
+              <div class="portrait-overlay"></div>
+            </div>
+            <div class="card-body">
+              <div class="card-tags">
+                <span class="tag">Demo character</span>
+                <span class="location">📍 Powai, Mumbai</span>
+              </div>
+              <h2>Mimi</h2>
+              <p>23-year-old lifestyle creator. Marketing executive with playful, luxury, feminine energy — apartment, cafe, gym, and friends all wired into her world graph.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="features">
+        <div class="feature">
+          <div class="feature-icon">✦</div>
+          <h3>Character Bible</h3>
+          <p>Identity, personality, and lifestyle that persist across every generation.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📍</div>
+          <h3>World Builder</h3>
+          <p>Homes, cafes, gyms, and favorite places — Mimi lives in Powai, Mumbai.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🪄</div>
+          <h3>Production Briefs</h3>
+          <p>Express intent once; the engine assembles world-aware content briefs.</p>
+        </div>
+      </section>
+
+      <section class="bottom-cta">
+        <p>Eight modules · Production Brief Engine · Higgsfield MCP integration</p>
+        <a href="https://github.com/gajendrajha09/Character-OS" target="_blank" rel="noopener">Explore the full studio on GitHub →</a>
+      </section>
+    </main>
+
+    <footer>CharacterOS — AI Character Studio &amp; Content Engine</footer>
+  </div>
+</body>
+</html>

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { advancedModules } from "@/lib/mock/dashboard-data";
 
 const primaryNav = [
-  { id: "studio", label: "Studio", icon: LayoutDashboard, href: "/", active: true },
+  { id: "studio", label: "Studio", icon: LayoutDashboard, href: "/studio", active: true },
   { id: "character", label: "Character", icon: User, href: "#character" },
   { id: "world", label: "World", icon: Globe, href: "#world" },
   { id: "content", label: "Content", icon: Wand2, href: "#content" },

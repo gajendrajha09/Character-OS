@@ -91,7 +91,19 @@ cp .env.example .env.local
 npm run db:validate
 npm run db:generate
 npm run typecheck
+npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) for the landing page, or [http://localhost:3000/studio](http://localhost:3000/studio) for the demo studio (Mimi).
+
+### Live site
+
+| Option | URL | What you get |
+|--------|-----|--------------|
+| **GitHub Pages** | [gajendrajha09.github.io/Character-OS](https://gajendrajha09.github.io/Character-OS/) | Static landing (enable Pages → `/docs` on `main`) |
+| **Vercel** | Your deploy URL | Full Next.js app — landing + studio + API |
+
+Setup details: [docs/DEPLOY.md](docs/DEPLOY.md)
 
 ---
 
