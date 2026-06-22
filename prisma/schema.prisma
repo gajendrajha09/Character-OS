@@ -1,0 +1,1081 @@
+// CharacterOS — Prisma Schema
+// Database: PostgreSQL (Supabase)
+// ORM: Prisma
+// Architecture: Character → World → Content
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum CharacterStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum CreationMode {
+  QUICK
+  DEEP_BUILDER
+  TEMPLATE
+}
+
+enum ResidenceType {
+  APARTMENT
+  HOUSE
+  STUDIO
+  PENTHOUSE
+  LOFT
+}
+
+enum InteriorStyle {
+  MINIMALIST
+  BOHEMIAN
+  LUXURY
+  INDUSTRIAL
+  SCANDINAVIAN
+  ECLECTIC
+  MODERN
+  TRADITIONAL
+}
+
+enum RoomType {
+  BEDROOM
+  LIVING_ROOM
+  KITCHEN
+  BATHROOM
+  BALCONY
+  HOME_OFFICE
+  DINING_ROOM
+  ENTRYWAY
+}
+
+enum LocationType {
+  CAFE
+  RESTAURANT
+  GYM
+  MALL
+  OFFICE
+  UNIVERSITY
+  PARK
+  NIGHTLIFE
+  BEACH
+  TRAVEL
+  OTHER
+}
+
+enum VisitFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  OCCASIONAL
+  RARELY
+}
+
+enum FriendRelation {
+  BEST_FRIEND
+  CLOSE_FRIEND
+  ACQUAINTANCE
+  COLLEAGUE
+  NEIGHBOR
+  MENTOR
+}
+
+enum FamilyRelation {
+  MOTHER
+  FATHER
+  SIBLING
+  GRANDPARENT
+  COUSIN
+  PARTNER
+  OTHER
+}
+
+enum PetSpecies {
+  DOG
+  CAT
+  BIRD
+  FISH
+  RABBIT
+  OTHER
+}
+
+enum WorldEventType {
+  BIRTHDAY
+  FESTIVAL
+  LOCAL_EVENT
+  SEASONAL
+  BRAND
+  CUSTOM
+}
+
+enum WorkStyle {
+  REMOTE
+  HYBRID
+  OFFICE
+}
+
+enum RoutineType {
+  MORNING
+  AFTERNOON
+  EVENING
+  WEEKEND
+  WEEKDAY
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum HobbyFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  OCCASIONAL
+}
+
+enum OutfitOccasion {
+  CASUAL
+  WORK
+  GYM
+  FORMAL
+  TRAVEL
+  DATE
+  CONTENT_SHOOT
+  LOUNGE
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  AUDIO
+  PROMPT
+  WORKFLOW
+  LORA
+  DOCUMENT
+}
+
+enum PromptType {
+  IMAGE
+  VIDEO
+  CAPTION
+  NEGATIVE
+  SYSTEM
+}
+
+enum PromptTemplate {
+  CHARACTER_GENERATION
+  CHARACTER_BIBLE
+  LOCATION_CREATION
+  FRIEND_CREATION
+  LIFESTYLE_GENERATION
+  CONTENT_CALENDAR
+  PRODUCT_PROMOTION
+  INSTAGRAM_CAPTION
+  TRENDING_REEL
+  WORLD_GENERATION
+  ROOM_GENERATION
+  OUTFIT_GENERATION
+  MEMORY_QUERY
+  HASHTAG_GENERATION
+}
+
+enum CampaignType {
+  WEEKLY
+  MONTHLY
+  SEASONAL
+  BRAND
+  EVENT
+  CUSTOM
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ContentIdeaType {
+  POST
+  REEL
+  STORY
+  CAROUSEL
+  VLOG
+  THREAD
+}
+
+enum ContentIdeaStatus {
+  IDEA
+  PLANNED
+  GENERATED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Platform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  YOUTUBE_SHORTS
+  FACEBOOK
+  THREADS
+  X
+  LINKEDIN
+}
+
+enum BrandDealStatus {
+  PROPOSED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PostFormat {
+  SINGLE
+  CAROUSEL
+  STORY
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ReelFormat {
+  TRENDING
+  UGC
+  INFLUENCER
+  VLOG
+  REVIEW
+  TUTORIAL
+  UNBOXING
+}
+
+enum VideoProvider {
+  HIGGSFIELD
+  VEO
+  KLING
+  RUNWAY
+  OTHER
+}
+
+enum ReelStatus {
+  DRAFT
+  GENERATING
+  READY
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProductPromotionStatus {
+  BRIEF
+  PLANNING
+  GENERATING
+  COMPLETE
+  ARCHIVED
+}
+
+enum GenerationJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum GenerationJobType {
+  CHARACTER
+  BIBLE
+  WORLD
+  LOCATION
+  IMAGE
+  CAPTION
+  HASHTAGS
+  CONTENT_IDEAS
+  PRODUCT_PROMOTION
+  SOCIAL_CAMPAIGN
+  REEL
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum ProductionBriefStatus {
+  DRAFT
+  APPROVED
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum ProductionBriefContentType {
+  REEL
+  POST
+  STORY
+  CAROUSEL
+  VLOG
+}
+
+// ============================================================================
+// USER & BILLING (Supabase auth.users referenced by userId)
+// ============================================================================
+
+model UserProfile {
+  id               String           @id @default(uuid()) @db.Uuid
+  userId           String           @unique @map("user_id") @db.Uuid
+  displayName      String?          @map("display_name")
+  avatarUrl        String?          @map("avatar_url")
+  subscriptionTier SubscriptionTier @default(FREE) @map("subscription_tier")
+  creditsBalance   Int              @default(0) @map("credits_balance")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  characters Character[]
+
+  @@map("user_profiles")
+}
+
+model CreditTransaction {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  amount      Int
+  reason      String
+  referenceId String?  @map("reference_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("credit_transactions")
+}
+
+// ============================================================================
+// CHARACTER LAYER
+// ============================================================================
+
+model Character {
+  id               String          @id @default(uuid()) @db.Uuid
+  userId           String          @map("user_id") @db.Uuid
+  userProfileId    String          @map("user_profile_id") @db.Uuid
+  name             String
+  slug             String
+  avatarUrl        String?         @map("avatar_url")
+  age              Int?
+  birthday         DateTime?
+  status           CharacterStatus @default(DRAFT)
+  creationMode     CreationMode    @default(QUICK) @map("creation_mode")
+  contentNiche     String?         @map("content_niche")
+  brandVoice       String?         @map("brand_voice")
+  socialMediaStyle Json?           @map("social_media_style")
+  metadata         Json?
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  userProfile        UserProfile         @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  bible              CharacterBible?
+  world              World?
+  occupation         Occupation?
+  routines           Routine[]
+  hobbies            Hobby[]
+  outfits            Outfit[]
+  assets             Asset[]
+  prompts            Prompt[]
+  campaigns          Campaign[]
+  contentIdeas       ContentIdea[]
+  posts              Post[]
+  reels              Reel[]
+  productPromotions  ProductPromotion[]
+  brandDeals         BrandDeal[]
+  generationJobs     GenerationJob[]
+  productionBriefs   ProductionBrief[]
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@index([userProfileId])
+  @@map("characters")
+}
+
+model CharacterBible {
+  id             String   @id @default(uuid()) @db.Uuid
+  characterId    String   @unique @map("character_id") @db.Uuid
+  identity       Json
+  personality    Json
+  home           Json
+  socialCircle   Json     @map("social_circle")
+  lifestyle      Json
+  fashion        Json
+  goals          Json?
+  dailyRoutine   Json?    @map("daily_routine")
+  favoritePlaces Json?    @map("favorite_places")
+  version        Int      @default(1)
+  generatedAt    DateTime @default(now()) @map("generated_at")
+  rawMarkdown    String?  @map("raw_markdown") @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("character_bibles")
+}
+
+// ============================================================================
+// WORLD LAYER (THE MOAT)
+// ============================================================================
+
+model World {
+  id          String   @id @default(uuid()) @db.Uuid
+  characterId String   @unique @map("character_id") @db.Uuid
+  name        String
+  city        String
+  country     String?
+  timezone    String?
+  culture     Json?
+  summary     String?  @db.Text
+  isComplete  Boolean  @default(false) @map("is_complete")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  character     Character      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  residence     Residence?
+  locations     Location[]
+  friends       Friend[]
+  familyMembers FamilyMember[]
+  pets          Pet[]
+  worldEvents   WorldEvent[]
+
+  @@map("worlds")
+}
+
+model Residence {
+  id                  String        @id @default(uuid()) @db.Uuid
+  worldId             String        @unique @map("world_id") @db.Uuid
+  type                ResidenceType @default(APARTMENT)
+  neighborhood        String
+  address             String?
+  floor               Int?
+  squareMeters        Float?        @map("square_meters")
+  interiorStyle       InteriorStyle @default(MODERN) @map("interior_style")
+  exteriorDescription String?       @map("exterior_description") @db.Text
+  viewDescription     String?       @map("view_description") @db.Text
+  description         String        @db.Text
+  imageUrl            String?       @map("image_url")
+  promptId            String?       @map("prompt_id") @db.Uuid
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  world  World   @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  prompt Prompt? @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  rooms  Room[]
+
+  @@map("residences")
+}
+
+model Room {
+  id            String   @id @default(uuid()) @db.Uuid
+  residenceId   String   @map("residence_id") @db.Uuid
+  type          RoomType
+  name          String
+  description   String   @db.Text
+  designDetails Json?    @map("design_details")
+  story         String?  @db.Text
+  imageUrl      String?  @map("image_url")
+  promptId      String?  @map("prompt_id") @db.Uuid
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  residence Residence @relation(fields: [residenceId], references: [id], onDelete: Cascade)
+  prompt    Prompt?   @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  assets           Asset[]
+  productionBriefs ProductionBrief[]
+
+  @@index([residenceId])
+  @@map("rooms")
+}
+
+model Location {
+  id             String         @id @default(uuid()) @db.Uuid
+  worldId        String         @map("world_id") @db.Uuid
+  type           LocationType
+  name           String
+  description    String         @db.Text
+  relationship   String?        @db.Text
+  story          String?        @db.Text
+  address        String?
+  visitFrequency VisitFrequency @default(WEEKLY) @map("visit_frequency")
+  imageUrl       String?        @map("image_url")
+  promptId       String?        @map("prompt_id") @db.Uuid
+  isFavorite     Boolean        @default(false) @map("is_favorite")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  world         World          @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  prompt        Prompt?        @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  assets        Asset[]
+  contentIdeas  ContentIdea[]
+  routines      Routine[]
+  worldEvents   WorldEvent[]
+  workplaces       Occupation[]      @relation("WorkplaceLocation")
+  productionBriefs ProductionBrief[]
+
+  @@index([worldId])
+  @@index([worldId, type])
+  @@map("locations")
+}
+
+model Friend {
+  id           String         @id @default(uuid()) @db.Uuid
+  worldId      String         @map("world_id") @db.Uuid
+  name         String
+  age          Int?
+  occupation   String?
+  personality  Json?
+  relationship FriendRelation @default(CLOSE_FRIEND)
+  description  String         @db.Text
+  story        String?        @db.Text
+  appearance   String?        @db.Text
+  imageUrl     String?        @map("image_url")
+  promptId     String?        @map("prompt_id") @db.Uuid
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  world  World   @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  prompt Prompt? @relation(fields: [promptId], references: [id], onDelete: SetNull)
+
+  @@index([worldId])
+  @@map("friends")
+}
+
+model FamilyMember {
+  id          String         @id @default(uuid()) @db.Uuid
+  worldId     String         @map("world_id") @db.Uuid
+  name        String
+  relation    FamilyRelation
+  age         Int?
+  occupation  String?
+  personality Json?
+  description String         @db.Text
+  livesWith   Boolean        @default(false) @map("lives_with")
+  appearance  String?        @db.Text
+  imageUrl    String?        @map("image_url")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  world World @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@index([worldId])
+  @@map("family_members")
+}
+
+model Pet {
+  id          String     @id @default(uuid()) @db.Uuid
+  worldId     String     @map("world_id") @db.Uuid
+  name        String
+  species     PetSpecies
+  breed       String?
+  personality Json?
+  description String     @db.Text
+  appearance  String?    @db.Text
+  imageUrl    String?    @map("image_url")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  world World @relation(fields: [worldId], references: [id], onDelete: Cascade)
+
+  @@index([worldId])
+  @@map("pets")
+}
+
+model WorldEvent {
+  id                 String         @id @default(uuid()) @db.Uuid
+  worldId            String         @map("world_id") @db.Uuid
+  title              String
+  type               WorldEventType
+  date               DateTime
+  recurring          Boolean        @default(false)
+  description        String?        @db.Text
+  contentOpportunity String?        @map("content_opportunity") @db.Text
+  locationId         String?        @map("location_id") @db.Uuid
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  world        World         @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  location     Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  contentIdeas ContentIdea[]
+
+  @@index([worldId])
+  @@index([worldId, date])
+  @@map("world_events")
+}
+
+// ============================================================================
+// LIFESTYLE ENTITIES
+// ============================================================================
+
+model Occupation {
+  id                    String    @id @default(uuid()) @db.Uuid
+  characterId           String    @unique @map("character_id") @db.Uuid
+  title                 String
+  company               String?
+  industry              String?
+  income                String?
+  workStyle             WorkStyle @default(HYBRID) @map("work_style")
+  description           String    @db.Text
+  workplaceLocationId   String?   @map("workplace_location_id") @db.Uuid
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  character         Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  workplaceLocation Location? @relation("WorkplaceLocation", fields: [workplaceLocationId], references: [id], onDelete: SetNull)
+
+  @@map("occupations")
+}
+
+model Routine {
+  id          String      @id @default(uuid()) @db.Uuid
+  characterId String      @map("character_id") @db.Uuid
+  type        RoutineType
+  title       String
+  schedule    Json
+  description String      @db.Text
+  locationId  String?     @map("location_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  location  Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([characterId])
+  @@map("routines")
+}
+
+model Hobby {
+  id               String         @id @default(uuid()) @db.Uuid
+  characterId      String         @map("character_id") @db.Uuid
+  name             String
+  skillLevel       SkillLevel     @default(INTERMEDIATE) @map("skill_level")
+  frequency        HobbyFrequency @default(WEEKLY)
+  description      String         @db.Text
+  contentPotential String?        @map("content_potential") @db.Text
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@map("hobbies")
+}
+
+model Outfit {
+  id          String         @id @default(uuid()) @db.Uuid
+  characterId String         @map("character_id") @db.Uuid
+  name        String
+  occasion    OutfitOccasion @default(CASUAL)
+  description String         @db.Text
+  items       Json
+  brands      Json?
+  hairStyle   String?        @map("hair_style")
+  makeup      String?
+  imageUrl    String?        @map("image_url")
+  promptId    String?        @map("prompt_id") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  character    Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  prompt       Prompt?       @relation(fields: [promptId], references: [id], onDelete: SetNull)
+  contentIdeas     ContentIdea[]
+  productionBriefs ProductionBrief[]
+
+  @@index([characterId])
+  @@map("outfits")
+}
+
+// ============================================================================
+// ASSET LAYER
+// ============================================================================
+
+model Prompt {
+  id             String         @id @default(uuid()) @db.Uuid
+  characterId    String         @map("character_id") @db.Uuid
+  name           String
+  type           PromptType     @default(IMAGE)
+  template       PromptTemplate
+  positivePrompt String         @map("positive_prompt") @db.Text
+  negativePrompt String?        @map("negative_prompt") @db.Text
+  model          String?
+  parameters     Json?
+  version        Int            @default(1)
+  isCanonical    Boolean        @default(false) @map("is_canonical")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  character  Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  assets     Asset[]
+  locations  Location[]
+  rooms      Room[]
+  residences Residence[]
+  outfits    Outfit[]
+  friends    Friend[]
+
+  @@index([characterId])
+  @@index([characterId, template])
+  @@map("prompts")
+}
+
+model Asset {
+  id           String    @id @default(uuid()) @db.Uuid
+  characterId  String    @map("character_id") @db.Uuid
+  type         AssetType
+  name         String
+  url          String
+  thumbnailUrl String?   @map("thumbnail_url")
+  mimeType     String?   @map("mime_type")
+  fileSize     Int?      @map("file_size")
+  width        Int?
+  height       Int?
+  tags         String[]
+  locationId   String?   @map("location_id") @db.Uuid
+  roomId       String?   @map("room_id") @db.Uuid
+  campaignId   String?   @map("campaign_id") @db.Uuid
+  promptId     String?   @map("prompt_id") @db.Uuid
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  location  Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  room      Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  campaign  Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  prompt    Prompt?   @relation(fields: [promptId], references: [id], onDelete: SetNull)
+
+  @@index([characterId])
+  @@index([characterId, type])
+  @@index([locationId])
+  @@index([roomId])
+  @@index([campaignId])
+  @@map("assets")
+}
+
+// ============================================================================
+// CONTENT LAYER
+// ============================================================================
+
+model BrandDeal {
+  id           String          @id @default(uuid()) @db.Uuid
+  characterId  String          @map("character_id") @db.Uuid
+  brandName    String          @map("brand_name")
+  product      String
+  budget       Decimal?        @db.Decimal(12, 2)
+  deliverables Json?
+  guidelines   String?         @db.Text
+  status       BrandDealStatus @default(PROPOSED)
+  startDate    DateTime?       @map("start_date")
+  endDate      DateTime?       @map("end_date")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  character          Character           @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  campaigns          Campaign[]
+  productPromotions  ProductPromotion[]
+
+  @@index([characterId])
+  @@map("brand_deals")
+}
+
+model Campaign {
+  id          String         @id @default(uuid()) @db.Uuid
+  characterId String         @map("character_id") @db.Uuid
+  title       String
+  type        CampaignType   @default(WEEKLY)
+  goal        String?        @db.Text
+  platform    Platform[]
+  startDate   DateTime       @map("start_date")
+  endDate     DateTime       @map("end_date")
+  status      CampaignStatus @default(DRAFT)
+  brief       Json?
+  brandDealId String?        @map("brand_deal_id") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  character    Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  brandDeal    BrandDeal?    @relation(fields: [brandDealId], references: [id], onDelete: SetNull)
+  contentIdeas ContentIdea[]
+  posts        Post[]
+  reels        Reel[]
+  assets       Asset[]
+
+  @@index([characterId])
+  @@index([characterId, status])
+  @@map("campaigns")
+}
+
+model ContentIdea {
+  id            String            @id @default(uuid()) @db.Uuid
+  characterId   String            @map("character_id") @db.Uuid
+  campaignId    String?           @map("campaign_id") @db.Uuid
+  worldEventId  String?           @map("world_event_id") @db.Uuid
+  title         String
+  type          ContentIdeaType   @default(POST)
+  platform      Platform          @default(INSTAGRAM)
+  concept       String            @db.Text
+  locationId    String?           @map("location_id") @db.Uuid
+  outfitId      String?           @map("outfit_id") @db.Uuid
+  scheduledDate DateTime?         @map("scheduled_date")
+  status        ContentIdeaStatus @default(IDEA)
+  caption       String?           @db.Text
+  hashtags      String[]
+  imagePrompt   String?           @map("image_prompt") @db.Text
+  sortOrder     Int?              @map("sort_order")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  character  Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  campaign   Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  worldEvent WorldEvent? @relation(fields: [worldEventId], references: [id], onDelete: SetNull)
+  location   Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  outfit     Outfit?     @relation(fields: [outfitId], references: [id], onDelete: SetNull)
+  post             Post?
+  reel             Reel?
+  productionBriefs ProductionBrief[]
+
+  @@index([characterId])
+  @@index([campaignId])
+  @@index([characterId, scheduledDate])
+  @@map("content_ideas")
+}
+
+model Post {
+  id            String     @id @default(uuid()) @db.Uuid
+  characterId   String     @map("character_id") @db.Uuid
+  campaignId    String?    @map("campaign_id") @db.Uuid
+  contentIdeaId String?    @unique @map("content_idea_id") @db.Uuid
+  platform      Platform   @default(INSTAGRAM)
+  format        PostFormat @default(SINGLE)
+  caption       String     @db.Text
+  hashtags      String[]
+  altText       String?    @map("alt_text") @db.Text
+  assetIds      String[]   @map("asset_ids") @db.Uuid
+  scheduledAt   DateTime?  @map("scheduled_at")
+  publishedAt   DateTime?  @map("published_at")
+  status        PostStatus @default(DRAFT)
+  exportBundle  Json?      @map("export_bundle")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  character   Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  campaign    Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  contentIdea      ContentIdea?      @relation(fields: [contentIdeaId], references: [id], onDelete: SetNull)
+  productionBriefs ProductionBrief[]
+
+  @@index([characterId])
+  @@index([characterId, status])
+  @@map("posts")
+}
+
+model Reel {
+  id            String        @id @default(uuid()) @db.Uuid
+  characterId   String        @map("character_id") @db.Uuid
+  campaignId    String?       @map("campaign_id") @db.Uuid
+  contentIdeaId String?       @unique @map("content_idea_id") @db.Uuid
+  platform      Platform      @default(INSTAGRAM)
+  title         String
+  caption       String        @db.Text
+  hashtags      String[]
+  videoUrl      String?       @map("video_url")
+  thumbnailUrl  String?       @map("thumbnail_url")
+  duration      Int?
+  format        ReelFormat    @default(TRENDING)
+  provider      VideoProvider?
+  script        String?       @db.Text
+  status        ReelStatus    @default(DRAFT)
+  scheduledAt   DateTime?     @map("scheduled_at")
+  publishedAt   DateTime?     @map("published_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  character   Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  campaign    Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  contentIdea      ContentIdea?      @relation(fields: [contentIdeaId], references: [id], onDelete: SetNull)
+  productionBriefs ProductionBrief[]
+
+  @@index([characterId])
+  @@index([characterId, status])
+  @@map("reels")
+}
+
+model ProductPromotion {
+  id                 String                 @id @default(uuid()) @db.Uuid
+  characterId        String                 @map("character_id") @db.Uuid
+  brandDealId        String?                @map("brand_deal_id") @db.Uuid
+  productName        String                 @map("product_name")
+  productDescription String?                @map("product_description") @db.Text
+  campaignGoal       String                 @map("campaign_goal") @db.Text
+  targetAudience     String?                @map("target_audience") @db.Text
+  platform           Platform               @default(INSTAGRAM)
+  budget             Decimal?               @db.Decimal(12, 2)
+  contentPlan        Json?                  @map("content_plan")
+  deliverables       Json?
+  status             ProductPromotionStatus @default(BRIEF)
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
+
+  character Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  brandDeal BrandDeal? @relation(fields: [brandDealId], references: [id], onDelete: SetNull)
+
+  @@index([characterId])
+  @@map("product_promotions")
+}
+
+// ============================================================================
+// PRODUCTION BRIEF (Intent → Brief → Generation)
+// ============================================================================
+
+model ProductionBrief {
+  id                String                     @id @default(uuid()) @db.Uuid
+  characterId       String                     @map("character_id") @db.Uuid
+  contentType       ProductionBriefContentType @map("content_type")
+  intent            String
+  character         String
+  locationId        String?                    @map("location_id") @db.Uuid
+  roomId            String?                    @map("room_id") @db.Uuid
+  outfitId          String?                    @map("outfit_id") @db.Uuid
+  scene             String
+  wardrobe          String
+  mood              String
+  camera            String
+  platform          Platform                   @default(INSTAGRAM)
+  duration          Int?
+  status            ProductionBriefStatus      @default(DRAFT)
+  assembledFrom     Json                       @map("assembled_from")
+  generationPayload Json?                      @map("generation_payload")
+  promptHidden      String?                    @map("prompt_hidden") @db.Text
+  contentIdeaId     String?                    @map("content_idea_id") @db.Uuid
+  reelId            String?                    @map("reel_id") @db.Uuid
+  postId            String?                    @map("post_id") @db.Uuid
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+
+  characterRef Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  location     Location?    @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  room         Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  outfit       Outfit?      @relation(fields: [outfitId], references: [id], onDelete: SetNull)
+  contentIdea  ContentIdea? @relation(fields: [contentIdeaId], references: [id], onDelete: SetNull)
+  reel         Reel?        @relation(fields: [reelId], references: [id], onDelete: SetNull)
+  post         Post?        @relation(fields: [postId], references: [id], onDelete: SetNull)
+
+  @@index([characterId])
+  @@index([characterId, status])
+  @@map("production_briefs")
+}
+
+// ============================================================================
+// GENERATION JOBS (Async AI orchestration)
+// ============================================================================
+
+model GenerationJob {
+  id          String              @id @default(uuid()) @db.Uuid
+  characterId String              @map("character_id") @db.Uuid
+  userId      String              @map("user_id") @db.Uuid
+  type        GenerationJobType
+  status      GenerationJobStatus @default(PENDING)
+  input       Json
+  output      Json?
+  error       String?             @db.Text
+  provider    String?
+  creditsUsed Int                 @default(0) @map("credits_used")
+  startedAt   DateTime?           @map("started_at")
+  completedAt DateTime?           @map("completed_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+  @@index([userId, status])
+  @@map("generation_jobs")
+}
+
+// ============================================================================
+// FUTURE EXTENSIBILITY STUBS (Phase 2+)
+// ============================================================================
+
+model CharacterTemplate {
+  id          String   @id @default(uuid()) @db.Uuid
+  creatorId   String?  @map("creator_id") @db.Uuid
+  name        String
+  description String   @db.Text
+  category    String
+  previewUrl  String?  @map("preview_url")
+  bibleSeed   Json     @map("bible_seed")
+  worldSeed   Json     @map("world_seed")
+  price       Decimal? @db.Decimal(10, 2)
+  isPublic    Boolean  @default(false) @map("is_public")
+  downloads   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category, isPublic])
+  @@map("character_templates")
+}
+
+model MemoryEntry {
+  id          String   @id @default(uuid()) @db.Uuid
+  characterId String   @map("character_id") @db.Uuid
+  query       String   @db.Text
+  response    String   @db.Text
+  contextUsed Json     @map("context_used")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([characterId])
+  @@map("memory_entries")
+}
+
+model SocialConnection {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  platform     Platform
+  accessToken  String   @map("access_token")
+  refreshToken String?  @map("refresh_token")
+  accountId    String   @map("account_id")
+  accountName  String?  @map("account_name")
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, platform, accountId])
+  @@map("social_connections")
+}
+
+model MarketplaceListing {
+  id          String   @id @default(uuid()) @db.Uuid
+  sellerId    String   @map("seller_id") @db.Uuid
+  type        String
+  title       String
+  description String   @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  previewUrl  String?  @map("preview_url")
+  payload     Json
+  isActive    Boolean  @default(true) @map("is_active")
+  salesCount  Int      @default(0) @map("sales_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([type, isActive])
+  @@map("marketplace_listings")
+}
